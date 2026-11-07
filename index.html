@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en-NZ">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kiwi Trivia Pursuit: Genus Edition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f1e7; --ink:#1f2430; --muted:#6b6f7b; --card:#fffdf8; --line:#e4dccb;
+    --geo:#2f6fd6; --ent:#e0559b; --his:#e8b81c; --art:#8a5a36; --sci:#2e9c5a; --spo:#ee7a24;
+    --accent:var(--geo);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Nunito,system-ui,sans-serif}
+  body{min-height:100vh;display:flex;justify-content:center;padding:20px 14px 40px}
+  .wrap{width:100%;max-width:560px}
+  header{text-align:center;margin-bottom:18px}
+  h1{font-family:Fraunces,Georgia,serif;font-weight:800;font-size:clamp(1.7rem,6vw,2.3rem);margin:6px 0 2px;letter-spacing:-.5px}
+  .sub{color:var(--muted);margin:0;font-size:.95rem}
+  .edition{margin:0 0 6px;font-weight:800;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .wheel{width:64px;height:64px;margin:0 auto}
+  .cats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+  .cat{border:0;border-radius:14px;padding:12px 6px;font:800 .82rem Nunito,sans-serif;color:#fff;cursor:pointer;
+       box-shadow:0 3px 0 rgba(0,0,0,.18);transition:transform .08s, box-shadow .08s, outline-color .2s;outline:3px solid transparent;outline-offset:2px;line-height:1.15}
+  .cat:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.18)}
+  .cat .ico{display:block;font-size:1.35rem;margin-bottom:4px}
+  .cat.sel{outline-color:var(--ink)}
+  .cat[data-c=his]{color:#3a2c00}
+  .random{width:100%;border:2px dashed var(--line);background:transparent;border-radius:14px;padding:10px;font:800 .9rem Nunito,sans-serif;color:var(--ink);cursor:pointer;margin-bottom:18px}
+  .random:hover{border-color:var(--muted)}
+  .card{background:var(--card);border-radius:20px;border:1px solid var(--line);box-shadow:0 10px 30px rgba(60,40,10,.08);overflow:hidden}
+  .band{background:var(--accent);color:#fff;padding:12px 18px;display:flex;justify-content:space-between;align-items:center;font-weight:800}
+  .band.dark{color:#3a2c00}
+  .band small{font-weight:600;opacity:.9}
+  .body{padding:22px 20px 20px;min-height:150px}
+  .q{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:clamp(1.2rem,4.6vw,1.5rem);line-height:1.35;margin:0}
+  .empty{color:var(--muted);text-align:center;padding:30px 0;font-size:1rem}
+  .reveal{display:flex;align-items:center;gap:12px;padding:14px 20px;border-top:1px solid var(--line);cursor:pointer;user-select:none}
+  .switch{position:relative;width:58px;height:32px;flex:none}
+  .switch input{opacity:0;width:0;height:0;position:absolute}
+  .track{position:absolute;inset:0;background:#cfc7b6;border-radius:99px;transition:background .2s}
+  .track::after{content:"";position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s}
+  .switch input:checked + .track{background:var(--accent)}
+  .switch input:checked + .track::after{transform:translateX(26px)}
+  .switch input:focus-visible + .track{outline:3px solid var(--ink);outline-offset:2px}
+  .reveal-label{font-weight:800}
+  .answer{max-height:0;overflow:hidden;transition:max-height .3s ease, padding .3s ease;padding:0 20px;background:#faf6ec}
+  .answer.show{max-height:220px;padding:16px 20px 18px}
+  .answer .lbl{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800}
+  .answer .a{font-size:1.2rem;font-weight:800;margin-top:4px}
+  .answer .note{font-size:.88rem;color:var(--muted);margin-top:4px}
+  .actions{display:flex;gap:10px;margin-top:14px}
+  .btn{flex:1;border:0;border-radius:14px;padding:14px;font:800 1rem Nunito,sans-serif;cursor:pointer;background:var(--ink);color:#fff}
+  .btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line);flex:0 0 auto;padding:14px 16px}
+  .btn:disabled{opacity:.4;cursor:default}
+  footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <svg class="wheel" viewBox="0 0 64 64" aria-hidden="true">
+      <circle cx="32" cy="32" r="30" fill="#fffdf8" stroke="#1f2430" stroke-width="2"/>
+      <g stroke="#1f2430" stroke-width="1.5">
+        <path d="M32 32 L32 2 A30 30 0 0 1 57.98 17 Z" fill="#2f6fd6"/>
+        <path d="M32 32 L57.98 17 A30 30 0 0 1 57.98 47 Z" fill="#e0559b"/>
+        <path d="M32 32 L57.98 47 A30 30 0 0 1 32 62 Z" fill="#e8b81c"/>
+        <path d="M32 32 L32 62 A30 30 0 0 1 6.02 47 Z" fill="#8a5a36"/>
+        <path d="M32 32 L6.02 47 A30 30 0 0 1 6.02 17 Z" fill="#2e9c5a"/>
+        <path d="M32 32 L6.02 17 A30 30 0 0 1 32 2 Z" fill="#ee7a24"/>
+      </g>
+      <circle cx="32" cy="32" r="7" fill="#fffdf8" stroke="#1f2430" stroke-width="1.5"/>
+    </svg>
+    <h1>Kiwi Trivia Pursuit</h1>
+    <p class="edition">Genus Edition · 4,800 questions</p>
+    <p class="sub">Pick a category, read the question, flip the switch for the answer.</p>
+  </header>
+
+  <div class="cats" id="cats"></div>
+  <button class="random" id="randomBtn">🎲 Surprise me (random category)</button>
+
+  <div class="card" id="card">
+    <div class="band" id="band"><span id="catName">Choose a category</span><small id="count"></small></div>
+    <div class="body"><p class="empty" id="qEmpty">Tap a coloured category above to get your first question.</p><p class="q" id="q" hidden></p></div>
+    <label class="reveal" id="revealRow" hidden>
+      <span class="switch"><input type="checkbox" id="toggle"><span class="track"></span></span>
+      <span class="reveal-label" id="revealLabel">Show answer</span>
+    </label>
+    <div class="answer" id="answer" aria-live="polite">
+      <div class="lbl">Answer</div>
+      <div class="a" id="a"></div>
+      <div class="note" id="note"></div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn" id="nextBtn" disabled>Next question</button>
+    <button class="btn ghost" id="resetBtn" title="Reshuffle every category and start fresh">↺ Reshuffle</button>
+  </div>
+  <footer>Questions don't repeat within a category until you've seen them all; your progress is remembered on this device.</footer>
+</div>
+
+<script src="questions/geography.js"></script>
+<script src="questions/entertainment.js"></script>
+<script src="questions/history.js"></script>
+<script src="questions/arts-literature.js"></script>
+<script src="questions/science-nature.js"></script>
+<script src="questions/sports-leisure.js"></script>
+<script>
+const META = {
+  geo:{name:"Geography", ico:"🌏", colour:"var(--geo)"},
+  ent:{name:"Entertainment", ico:"🎬", colour:"var(--ent)"},
+  his:{name:"History", ico:"📜", colour:"var(--his)", dark:true},
+  art:{name:"Arts & Literature", ico:"🎨", colour:"var(--art)"},
+  sci:{name:"Science & Nature", ico:"🔬", colour:"var(--sci)"},
+  spo:{name:"Sports & Leisure", ico:"🏉", colour:"var(--spo)"}
+};
+const DATA = window.TRIVIA_QUESTIONS || {};
+const CATS = {};
+for (const k in META) CATS[k] = Object.assign({}, META[k], {q:(DATA[k]||[]).map(x=>[x.q,x.a,x.n||""])});
+
+const $ = id => document.getElementById(id);
+let decks = {}, current = null, currentCat = null;
+
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+const STORE="kiwiTriviaGenus.v1";
+function idx(k){return CATS[k].q.map((_,i)=>i);}
+function save(){try{localStorage.setItem(STORE,JSON.stringify(decks));}catch(e){}}
+function resetDecks(){for(const k in CATS) decks[k]=shuffle(idx(k)); save();}
+(function load(){
+  let saved=null; try{saved=JSON.parse(localStorage.getItem(STORE)||"null");}catch(e){}
+  for(const k in CATS){
+    const ok=saved&&Array.isArray(saved[k])&&saved[k].every(i=>Number.isInteger(i)&&i>=0&&i<CATS[k].q.length);
+    decks[k]= ok ? saved[k] : shuffle(idx(k));
+  }
+})();
+
+const catsEl = $("cats");
+for(const k in CATS){
+  const c = CATS[k], b = document.createElement("button");
+  b.className="cat"; b.dataset.c=k; b.style.background=c.colour;
+  b.innerHTML=`<span class="ico">${c.ico}</span>${c.name}`;
+  b.onclick=()=>draw(k);
+  catsEl.appendChild(b);
+}
+
+function setReveal(on){
+  $("toggle").checked=on;
+  $("answer").classList.toggle("show",on);
+  $("revealLabel").textContent = on ? "Hide answer" : "Show answer";
+}
+
+function draw(k){
+  currentCat=k;
+  if(!CATS[k].q.length) return;
+  if(!decks[k].length) decks[k]=shuffle(idx(k));
+  current=CATS[k].q[decks[k].pop()]; save();
+  const c=CATS[k];
+  document.documentElement.style.setProperty("--accent",c.colour);
+  document.querySelectorAll(".cat").forEach(b=>b.classList.toggle("sel",b.dataset.c===k));
+  $("band").classList.toggle("dark",!!c.dark);
+  $("catName").textContent=`${c.ico} ${c.name}`;
+  $("count").textContent=`${c.q.length-decks[k].length} of ${c.q.length}`;
+  $("qEmpty").hidden=true; $("q").hidden=false; $("revealRow").hidden=false;
+  setReveal(false);
+  $("q").textContent=current[0];
+  // fill answer after collapse so it can't be glimpsed mid-animation
+  setTimeout(()=>{ if(!$("toggle").checked){ $("a").textContent=current[1]; $("note").textContent=current[2]||""; } },320);
+  $("a").textContent=""; $("note").textContent="";
+  $("nextBtn").disabled=false;
+}
+
+$("toggle").addEventListener("change",e=>{
+  if(current){ $("a").textContent=current[1]; $("note").textContent=current[2]||""; }
+  setReveal(e.target.checked);
+});
+$("nextBtn").onclick=()=>currentCat&&draw(currentCat);
+$("randomBtn").onclick=()=>{const ks=Object.keys(CATS);draw(ks[Math.floor(Math.random()*ks.length)]);};
+$("resetBtn").onclick=()=>{resetDecks(); if(currentCat) draw(currentCat);};
+</script>
+</body>
+</html>
